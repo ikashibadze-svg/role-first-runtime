@@ -1,9 +1,9 @@
-# policies/policy.yaml (starter)
+# H100/H200 — maximize throughput
 defaults:
-  objective: "throughput"     # or 'latency' / 'balanced'
+  objective: "throughput"
   streams:
     priority: high
-  cudagraphs: true
+  cudagraphs: true   # CUDA Graphs to reduce launch overhead
 
 rules:
   - match: { action: "gather", object: "hot" }
