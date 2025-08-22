@@ -1,0 +1,25 @@
+# policies/policy.yaml (starter)
+defaults:
+  objective: "throughput"     # or 'latency' / 'balanced'
+  streams:
+    priority: high
+  cudagraphs: true
+
+rules:
+  - match: { action: "gather", object: "hot" }
+    triton: { num_warps: 4, num_stages: 3, tile: [128,128] }
+    cuda:   { prefetch: true, cp_async: true }
+
+  - match: { action: "seg_reduce", object: "hot" }
+    triton: { num_warps: 8, num_stages: 4, tile: [256,64] }
+    cutlass:{ epilogue_fuse: true }
+
+  - match: { action: "topk", object: "hot" }
+    triton: { num_warps: 4, num_stages: 3, tile: [128,64] }
+    cuda:   { graph_capture: true }
+
+  - match: { action: "reformat", object: "streaming" }
+    cuda:   { graph_capture: true, stream_isolation: true, prefetch: true }
+
+  - match: { action: "kv_move", object: "hot" }
+    cuda:   { prefetch: true, stream_priority: high, cp_async: true }
